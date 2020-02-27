@@ -9,10 +9,24 @@ router.post("/", (req, res, next) => {
     .catch(next);
 });
 
+// router.get("/", (req, res, next) => {
+//   Event.findAll()
+//     .then(events => res.json(events))
+//     .catch(next);
+// });
+
+// Pagination:
 router.get("/", (req, res, next) => {
-  Event.findAll()
-    .then(events => res.json(events))
-    .catch(next);
+  const limit = Math.min(req.query.limit || 25, 500);
+  const offset = req.query.offset || 0;
+
+  Event.findAndCountAll({
+    order: [["name", "DESC"]],
+    limit,
+    offset
+  })
+    .then(result => res.json({ events: result.rows, total: result.count }))
+    .catch(error => next(error));
 });
 
 router.get("/:eventId", (req, res, next) => {
